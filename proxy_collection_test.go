@@ -118,3 +118,45 @@ func TestAddAndRemoveProxyFromCollection(t *testing.T) {
 		}
 	})
 }
+
+func TestPopulateToxicsJson(t *testing.T) {
+	WithTCPProxy(t, func(conn net.Conn, response chan []byte, proxy *toxiproxy.Proxy) {
+
+		toxicsConfig := []byte(`
+		[
+			{
+				"name": "test", 
+				"toxics":[
+					{
+						"name": "latency_downstream",
+						"type": "latency",
+						"stream": "downstream",
+						"toxicity": 1.0,
+						"attributes":{"latency":100,"jitter":0}
+					},
+					{
+						"name": "limit_data_downstream",
+						"type": "limit_data",
+						"stream": "downstream",
+						"toxicity": 0.5,
+						"attributes":{"bytes":100}
+					}
+				]
+			}
+		]
+		`)
+
+		p := NewTestProxy("test", "localhost:20000")
+		collection := toxiproxy.NewProxyCollection()
+		collection.Add(p, true)
+		toxics, err := collection.PopulateToxicsJson(bytes.NewReader(toxicsConfig))
+		if err != nil {
+			t.Errorf("Expected parsed toxics: %v", err)
+		}
+
+		if len(toxics) != 2 {
+			t.Errorf("Expected 2 toxics, %d given", len(toxics))
+		}
+
+	})
+}
