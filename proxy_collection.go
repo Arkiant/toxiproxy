@@ -4,7 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
+
+	"github.com/Shopify/toxiproxy/toxics"
+	"github.com/sirupsen/logrus"
 )
 
 // ProxyCollection is a collection of proxies. It's the interface for anything
@@ -107,6 +111,58 @@ func (collection *ProxyCollection) PopulateJson(data io.Reader) ([]*Proxy, error
 		proxies = append(proxies, proxy)
 	}
 	return proxies, err
+}
+
+func (collection *ProxyCollection) PopulateToxicsJson(data io.Reader) ([]*toxics.ToxicWrapper, error) {
+	toxicConfig := []struct {
+		Name   string             `json:"name"`
+		Toxics []toxics.ToxicJSON `json:"toxics"`
+	}{}
+
+	err := json.NewDecoder(data).Decode(&toxicConfig)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to decode toxicConfig: %v", err)
+	}
+
+	toxicList := []*toxics.ToxicWrapper{}
+
+	for _, p := range toxicConfig {
+		proxy, err := collection.Get(p.Name)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"config":    data,
+				"proxyName": p.Name,
+				"error":     err,
+			}).Error("Failed to populate proxies from file")
+			break
+		}
+
+		for _, t := range p.Toxics {
+			data, err := json.Marshal(t)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"config": data,
+					"error":  err,
+				}).Error("Failed marshal json")
+				break
+			}
+
+			toxic, err := proxy.Toxics.AddToxicJson(strings.NewReader(string(data)))
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"config": data,
+					"error":  err,
+				}).Error("Failed to populate toxics")
+				break
+			}
+
+			toxicList = append(toxicList, toxic)
+
+		}
+
+	}
+
+	return toxicList, nil
 }
 
 func (collection *ProxyCollection) Proxies() map[string]*Proxy {

@@ -14,11 +14,13 @@ import (
 var host string
 var port string
 var config string
+var toxicConfig string
 
 func init() {
 	flag.StringVar(&host, "host", "localhost", "Host for toxiproxy's API to listen on")
 	flag.StringVar(&port, "port", "8474", "Port for toxiproxy's API to listen on")
 	flag.StringVar(&config, "config", "", "JSON file containing proxies to create on startup")
+	flag.StringVar(&toxicConfig, "toxics", "", "JSON file containing toxics to create on startup")
 	seed := flag.Int64("seed", time.Now().UTC().UnixNano(), "Seed for randomizing toxics with")
 	flag.Parse()
 	rand.Seed(*seed)
@@ -28,6 +30,14 @@ func main() {
 	server := toxiproxy.NewServer()
 	if len(config) > 0 {
 		server.PopulateConfig(config)
+	}
+
+	if len(toxicConfig) > 0 {
+		if len(config) > 0 {
+			server.PopulateToxics(toxicConfig)
+		} else {
+			server.NeedConfig()
+		}
 	}
 
 	// Handle SIGTERM to exit cleanly

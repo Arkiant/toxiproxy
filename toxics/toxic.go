@@ -64,6 +64,14 @@ type ToxicStub struct {
 	closed    chan struct{}
 }
 
+type ToxicJSON struct {
+	Attributes map[string]interface{} `json:"attributes"`
+	Name       string                 `json:"name"`
+	Type       string                 `json:"type"`
+	Stream     string                 `json:"stream"`
+	Toxicity   float32                `json:"toxicity"`
+}
+
 func NewToxicStub(input <-chan *stream.StreamChunk, output chan<- *stream.StreamChunk) *ToxicStub {
 	return &ToxicStub{
 		Interrupt: make(chan struct{}),

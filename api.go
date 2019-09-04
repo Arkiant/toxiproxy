@@ -47,6 +47,35 @@ func (server *ApiServer) PopulateConfig(filename string) {
 	}
 }
 
+func (server *ApiServer) NeedConfig() {
+	logrus.Error("Need use -config with a valid config file")
+}
+
+func (server *ApiServer) PopulateToxics(filename string) {
+
+	file, err := os.Open(filename)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"config": filename,
+			"error":  err,
+		}).Error("Error reading config file")
+	} else {
+		toxics, err := server.Collection.PopulateToxicsJson(file)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"config": filename,
+				"error":  err,
+			}).Error("Failed to populate toxics from file")
+		} else {
+			logrus.WithFields(logrus.Fields{
+				"config": filename,
+				"toxics": len(toxics),
+			}).Info("Populated toxics from file")
+		}
+	}
+
+}
+
 func StopBrowsersMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.UserAgent(), "Mozilla/") {
