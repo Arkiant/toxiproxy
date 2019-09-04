@@ -1,10 +1,10 @@
 package toxiproxy
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
-	"strings"
 	"sync"
 
 	"github.com/Shopify/toxiproxy/toxics"
@@ -134,7 +134,7 @@ func (collection *ProxyCollection) PopulateToxicsJson(data io.Reader) ([]*toxics
 				"proxyName": p.Name,
 				"error":     err,
 			}).Error("Failed to populate proxies from file")
-			break
+			return nil, err
 		}
 
 		for _, t := range p.Toxics {
@@ -144,16 +144,16 @@ func (collection *ProxyCollection) PopulateToxicsJson(data io.Reader) ([]*toxics
 					"config": data,
 					"error":  err,
 				}).Error("Failed marshal json")
-				break
+				return nil, err
 			}
 
-			toxic, err := proxy.Toxics.AddToxicJson(strings.NewReader(string(data)))
+			toxic, err := proxy.Toxics.AddToxicJson(bytes.NewReader(data))
 			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"config": data,
 					"error":  err,
 				}).Error("Failed to populate toxics")
-				break
+				return nil, err
 			}
 
 			toxicList = append(toxicList, toxic)
