@@ -1,0 +1,5 @@
+[{
+	"name": "redis",
+	"listen": "localhost:26379",
+	"upstream": "localhost:6379"
+}]

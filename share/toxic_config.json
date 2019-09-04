@@ -1,0 +1,21 @@
+[
+	{
+		"name": "redis", 
+		"toxics":[
+			{
+				"name": "latency_downstream",
+				"type": "latency",
+				"stream": "downstream",
+				"toxicity": 1.0,
+				"attributes":{"latency":100,"jitter":0}
+			},
+			{
+				"name": "limit_data_downstream",
+				"type": "limit_data",
+				"stream": "downstream",
+				"toxicity": 0.5,
+				"attributes":{"bytes":100}
+			}
+		]
+	}
+]
