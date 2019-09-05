@@ -66,13 +66,13 @@ $(DEB): tmp/build/$(SERVER_NAME)-linux-amd64 tmp/build/$(CLI_NAME)-linux-amd64
 		./share/toxiproxy.conf=/etc/init/toxiproxy.conf
 
 docker:
-	docker build --tag="shopify/toxiproxy:git" .
+	docker build --tag="arkiant/toxiproxy:git" .
 
 docker-release: linux
-	docker build --rm=true --tag="shopify/toxiproxy:$(VERSION)" .
-	docker tag shopify/toxiproxy:$(VERSION) shopify/toxiproxy:latest
-	docker push shopify/toxiproxy:$(VERSION)
-	docker push shopify/toxiproxy:latest
+	docker build --rm=true --tag="arkiant/toxiproxy:$(VERSION)" .
+	docker tag arkiant/toxiproxy:$(VERSION) arkiant/toxiproxy:latest
+	docker push arkiant/toxiproxy:$(VERSION)
+	docker push arkiant/toxiproxy:latest
 
 setup:
 	go mod download
